@@ -18,8 +18,8 @@ vgg19 = models.vgg19(weights=VGG19_Weights.IMAGENET1K_V1).to(device)
 inception_v3 = models.inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1, aux_logits=True).to(device)
 
 # 加载权重
-vgg19_weights = torch.load('/Users/liuxuchen/imagetesting/model_weights/vgg19-dcbb9e9d.pth')
-inception_v3_weights = torch.load('/Users/liuxuchen/imagetesting/model_weights/inception_v3_google-1a9a5a14.pth')
+vgg19_weights = torch.load('imagetesting/model_weights/vgg19-dcbb9e9d.pth')
+inception_v3_weights = torch.load('imagetesting/model_weights/inception_v3_google-1a9a5a14.pth')
 
 # 加载权重到模型
 vgg19.load_state_dict(vgg19_weights)
@@ -29,23 +29,11 @@ inception_v3.load_state_dict(inception_v3_weights)
 inception_v3.aux_logits = False
 inception_v3.AuxLogits = None
 
-# 定义数据预处理步骤
-def get_preprocessing_pipeline(rotation_angle=0, add_constant=0):
-    return transforms.Compose([
-        transforms.Resize((299, 299)),
-        transforms.Grayscale(num_output_channels=3),
-        transforms.Lambda(lambda x: transforms.functional.rotate(x, rotation_angle)),
-        transforms.Lambda(lambda x: Image.fromarray(np.uint8(np.clip(np.array(x) + add_constant * 255, 0, 255)))),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
 # 自定义MNIST数据集类
 class MNISTDataset(Dataset):
-    def __init__(self, images, labels, transform=None):
+    def __init__(self, images, labels):
         self.images = images
         self.labels = labels
-        self.transform = transform
 
     def __len__(self):
         return len(self.images)
@@ -54,8 +42,9 @@ class MNISTDataset(Dataset):
         image = self.images[idx]
         label = self.labels[idx]
         image = Image.fromarray(image).convert('RGB')
-        if self.transform:
-            image = self.transform(image)
+        image = transforms.functional.resize(image, (299, 299))
+        image = transforms.functional.to_tensor(image)
+        image = transforms.functional.normalize(image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         return image, label
 
 def read_mnist_images(file_path):
@@ -70,11 +59,13 @@ def read_mnist_labels(file_path):
         labels = np.frombuffer(f.read(), dtype=np.uint8)
     return labels
 
-def calculate_errors(outputs, labels):
-    abs_errors = torch.abs(outputs - labels)
+def calculate_errors(predictions, labels):
+    predictions = predictions.float()
+    labels = labels.float()
+    abs_errors = torch.abs(predictions - labels)
     max_abs_error = torch.max(abs_errors).item()
     mean_abs_error = torch.mean(abs_errors).item()
-    mse = torch.mean((outputs - labels) ** 2).item()
+    mse = torch.mean((predictions - labels) ** 2).item()
     return max_abs_error, mean_abs_error, mse
 
 def train_model(model, optimizer, dataloader, criterion, device, epochs=1):
@@ -98,7 +89,7 @@ def train_model(model, optimizer, dataloader, criterion, device, epochs=1):
             correct += (predicted == labels).sum().item()
             
             # Calculate and store errors
-            max_abs_error, mean_abs_error, mse = calculate_errors(outputs, labels)
+            max_abs_error, mean_abs_error, mse = calculate_errors(predicted, labels)
             max_abs_errors.append(max_abs_error)
             mean_abs_errors.append(mean_abs_error)
             mses.append(mse)
@@ -125,7 +116,7 @@ def test_model(model, dataloader, device):
             correct += (predicted == labels).sum().item()
             
             # Calculate and store errors
-            max_abs_error, mean_abs_error, mse = calculate_errors(outputs, labels)
+            max_abs_error, mean_abs_error, mse = calculate_errors(predicted, labels)
             max_abs_errors.append(max_abs_error)
             mean_abs_errors.append(mean_abs_error)
             mses.append(mse)
@@ -149,38 +140,22 @@ def plot_errors(error_dict):
 
 def main():
     # 读取训练集和测试集
-    train_images = read_mnist_images('/Users/liuxuchen/imagetesting/MNIST-master/train-images-idx3-ubyte.gz')
-    train_labels = read_mnist_labels('/Users/liuxuchen/imagetesting/MNIST-master/train-labels-idx1-ubyte.gz')
-    test_images = read_mnist_images('/Users/liuxuchen/imagetesting/MNIST-master/t10k-images-idx3-ubyte.gz')
-    test_labels = read_mnist_labels('/Users/liuxuchen/imagetesting/MNIST-master/t10k-labels-idx1-ubyte.gz')
-    
-    # 定义不同的预处理步骤
-    original_preprocess = get_preprocessing_pipeline()
-    rotated_preprocess = get_preprocessing_pipeline(rotation_angle=45)
-    rotated_add_preprocess = get_preprocessing_pipeline(rotation_angle=45, add_constant=0.1)
+    train_images = read_mnist_images('imagetesting/MNIST-master/train-images-idx3-ubyte.gz')
+    train_labels = read_mnist_labels('imagetesting/MNIST-master/train-labels-idx1-ubyte.gz')
+    test_images = read_mnist_images('imagetesting/MNIST-master/t10k-images-idx3-ubyte.gz')
+    test_labels = read_mnist_labels('imagetesting/MNIST-master/t10k-labels-idx1-ubyte.gz')
     
     # 创建数据集和数据加载器
-    original_train_dataset = MNISTDataset(train_images, train_labels, transform=original_preprocess)
-    original_test_dataset = MNISTDataset(test_images, test_labels, transform=original_preprocess)
-    rotated_train_dataset = MNISTDataset(train_images, train_labels, transform=rotated_preprocess)
-    rotated_test_dataset = MNISTDataset(test_images, test_labels, transform=rotated_preprocess)
-    rotated_add_train_dataset = MNISTDataset(train_images, train_labels, transform=rotated_add_preprocess)
-    rotated_add_test_dataset = MNISTDataset(test_images, test_labels, transform=rotated_add_preprocess)
+    original_train_dataset = MNISTDataset(train_images, train_labels)
+    original_test_dataset = MNISTDataset(test_images, test_labels)
     
     original_train_dataloader = DataLoader(original_train_dataset, batch_size=32, shuffle=True)
     original_test_dataloader = DataLoader(original_test_dataset, batch_size=32, shuffle=False)
-    rotated_train_dataloader = DataLoader(rotated_train_dataset, batch_size=32, shuffle=True)
-    rotated_test_dataloader = DataLoader(rotated_test_dataset, batch_size=32, shuffle=False)
-    rotated_add_train_dataloader = DataLoader(rotated_add_train_dataset, batch_size=32, shuffle=True)
-    rotated_add_test_dataloader = DataLoader(rotated_add_test_dataset, batch_size=32, shuffle=False)
 
     # 定义损失函数和优化器
     criterion_list = {
         "CrossEntropy": nn.CrossEntropyLoss(),
         "MSELoss": nn.MSELoss(),
-        "SmoothL1Loss":nn.SmoothL1Loss(),
-        "KLDivLoss":nn.KLDivLoss(),
-        "CosineEmbeddingLoss":nn.CosineEmbeddingLoss(),
     }
     vgg19_optimizer = optim.SGD(vgg19.parameters(), lr=0.001, momentum=0.9)
     inception_optimizer = optim.SGD(inception_v3.parameters(), lr=0.001, momentum=0.9)
@@ -197,17 +172,13 @@ def main():
         for model_name, model, optimizer, train_dataloader, test_dataloader in [
             ("VGG19", vgg19, vgg19_optimizer, original_train_dataloader, original_test_dataloader),
             ("InceptionV3", inception_v3, inception_optimizer, original_train_dataloader, original_test_dataloader),
-            ("VGG19", vgg19, vgg19_optimizer, rotated_train_dataloader, rotated_test_dataloader),
-            ("InceptionV3", inception_v3, inception_optimizer, rotated_train_dataloader, rotated_test_dataloader),
-            ("VGG19", vgg19, vgg19_optimizer, rotated_add_train_dataloader, rotated_add_test_dataloader),
-            ("InceptionV3", inception_v3, inception_optimizer, rotated_add_train_dataloader, rotated_add_test_dataloader),
         ]:
-            print(f"Training {model_name} model with {train_dataloader.dataset.transform} transformation using {criterion_name} loss...")
+            print(f"Training {model_name} model with {criterion_name} loss...")
             train_model(model, optimizer, train_dataloader, criterion, device, epochs=5)
             
-            print(f"Testing {model_name} model with {test_dataloader.dataset.transform} transformation using {criterion_name} loss...")
+            print(f"Testing {model_name} model with {criterion_name} loss...")
             accuracy, max_abs_error, mean_abs_error, mse = test_model(model, test_dataloader, device)
-            print(f'{model_name} Test Accuracy with {criterion_name} loss and transformation: {accuracy * 100:.2f}%, Max Abs Error: {max_abs_error:.4f}, Mean Abs Error: {mean_abs_error:.4f}, MSE: {mse:.4f}')
+            print(f'{model_name} Test Accuracy with {criterion_name} loss: {accuracy * 100:.2f}%, Max Abs Error: {max_abs_error:.4f}, Mean Abs Error: {mean_abs_error:.4f}, MSE: {mse:.4f}')
 
             # 记录误差
             if model_name not in error_dict["Max Absolute Error"]:
