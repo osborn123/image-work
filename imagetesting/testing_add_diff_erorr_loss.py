@@ -18,12 +18,12 @@ vgg19 = models.vgg19(weights=VGG19_Weights.IMAGENET1K_V1).to(device)
 inception_v3 = models.inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1, aux_logits=True).to(device)
 
 # 加载权重
-vgg19_weights = torch.load('imagetesting/model_weights/vgg19-dcbb9e9d.pth')
-inception_v3_weights = torch.load('imagetesting/model_weights/inception_v3_google-1a9a5a14.pth')
+#vgg19_weights = torch.load('imagetesting/model_weights/vgg19-dcbb9e9d.pth')
+#inception_v3_weights = torch.load('imagetesting/model_weights/inception_v3_google-1a9a5a14.pth')
 
 # 加载权重到模型
-vgg19.load_state_dict(vgg19_weights)
-inception_v3.load_state_dict(inception_v3_weights)
+#vgg19.load_state_dict(vgg19_weights)
+#inception_v3.load_state_dict(inception_v3_weights)
 
 # 移除 InceptionV3 模型的辅助分类器
 inception_v3.aux_logits = False
