@@ -1,0 +1,136 @@
+(image-work) PS C:\Users\liu18\image-work> python C:\Users\liu18\image-work\imagetesting\test_mmd_topk.py --search_range 10 20 50 100 --top_k 5
+Extracting features using ResNet model...
+Batch 1/40: Extracted features shape: torch.Size([250, 10])
+Batch 2/40: Extracted features shape: torch.Size([250, 10])
+Batch 3/40: Extracted features shape: torch.Size([250, 10])
+Batch 4/40: Extracted features shape: torch.Size([250, 10])
+Batch 5/40: Extracted features shape: torch.Size([250, 10])
+Batch 6/40: Extracted features shape: torch.Size([250, 10])
+Batch 7/40: Extracted features shape: torch.Size([250, 10])
+Batch 8/40: Extracted features shape: torch.Size([250, 10])
+Batch 9/40: Extracted features shape: torch.Size([250, 10])
+Batch 10/40: Extracted features shape: torch.Size([250, 10])
+Batch 11/40: Extracted features shape: torch.Size([250, 10])
+Batch 12/40: Extracted features shape: torch.Size([250, 10])
+Batch 13/40: Extracted features shape: torch.Size([250, 10])
+Batch 14/40: Extracted features shape: torch.Size([250, 10])
+Batch 15/40: Extracted features shape: torch.Size([250, 10])
+Batch 16/40: Extracted features shape: torch.Size([250, 10])
+Batch 17/40: Extracted features shape: torch.Size([250, 10])
+Batch 18/40: Extracted features shape: torch.Size([250, 10])
+Batch 19/40: Extracted features shape: torch.Size([250, 10])
+Batch 20/40: Extracted features shape: torch.Size([250, 10])
+Batch 21/40: Extracted features shape: torch.Size([250, 10])
+Batch 22/40: Extracted features shape: torch.Size([250, 10])
+Batch 23/40: Extracted features shape: torch.Size([250, 10])
+Batch 24/40: Extracted features shape: torch.Size([250, 10])
+Batch 25/40: Extracted features shape: torch.Size([250, 10])
+Batch 26/40: Extracted features shape: torch.Size([250, 10])
+Batch 27/40: Extracted features shape: torch.Size([250, 10])
+Batch 28/40: Extracted features shape: torch.Size([250, 10])
+Batch 29/40: Extracted features shape: torch.Size([250, 10])
+Batch 30/40: Extracted features shape: torch.Size([250, 10])
+Batch 31/40: Extracted features shape: torch.Size([250, 10])
+Batch 32/40: Extracted features shape: torch.Size([250, 10])
+Batch 33/40: Extracted features shape: torch.Size([250, 10])
+Batch 34/40: Extracted features shape: torch.Size([250, 10])
+Batch 35/40: Extracted features shape: torch.Size([250, 10])
+Batch 36/40: Extracted features shape: torch.Size([250, 10])
+Batch 37/40: Extracted features shape: torch.Size([250, 10])
+Batch 38/40: Extracted features shape: torch.Size([250, 10])
+Batch 39/40: Extracted features shape: torch.Size([250, 10])
+Batch 40/40: Extracted features shape: torch.Size([250, 10])
+Extracting features using ZFNet model...
+Batch 1/40: Extracted features shape: torch.Size([250, 10])
+Batch 2/40: Extracted features shape: torch.Size([250, 10])
+Batch 3/40: Extracted features shape: torch.Size([250, 10])
+Batch 4/40: Extracted features shape: torch.Size([250, 10])
+Batch 5/40: Extracted features shape: torch.Size([250, 10])
+Batch 6/40: Extracted features shape: torch.Size([250, 10])
+Batch 7/40: Extracted features shape: torch.Size([250, 10])
+Batch 8/40: Extracted features shape: torch.Size([250, 10])
+Batch 9/40: Extracted features shape: torch.Size([250, 10])
+Batch 10/40: Extracted features shape: torch.Size([250, 10])
+Batch 11/40: Extracted features shape: torch.Size([250, 10])
+Batch 12/40: Extracted features shape: torch.Size([250, 10])
+Batch 13/40: Extracted features shape: torch.Size([250, 10])
+Batch 14/40: Extracted features shape: torch.Size([250, 10])
+Batch 15/40: Extracted features shape: torch.Size([250, 10])
+Batch 16/40: Extracted features shape: torch.Size([250, 10])
+Batch 17/40: Extracted features shape: torch.Size([250, 10])
+Batch 18/40: Extracted features shape: torch.Size([250, 10])
+Batch 19/40: Extracted features shape: torch.Size([250, 10])
+Batch 20/40: Extracted features shape: torch.Size([250, 10])
+Batch 21/40: Extracted features shape: torch.Size([250, 10])
+Batch 22/40: Extracted features shape: torch.Size([250, 10])
+Batch 23/40: Extracted features shape: torch.Size([250, 10])
+Batch 24/40: Extracted features shape: torch.Size([250, 10])
+Batch 25/40: Extracted features shape: torch.Size([250, 10])
+Batch 26/40: Extracted features shape: torch.Size([250, 10])
+Batch 27/40: Extracted features shape: torch.Size([250, 10])
+Batch 28/40: Extracted features shape: torch.Size([250, 10])
+Batch 29/40: Extracted features shape: torch.Size([250, 10])
+Batch 30/40: Extracted features shape: torch.Size([250, 10])
+Batch 31/40: Extracted features shape: torch.Size([250, 10])
+Batch 32/40: Extracted features shape: torch.Size([250, 10])
+Batch 33/40: Extracted features shape: torch.Size([250, 10])
+Batch 34/40: Extracted features shape: torch.Size([250, 10])
+Batch 35/40: Extracted features shape: torch.Size([250, 10])
+Batch 36/40: Extracted features shape: torch.Size([250, 10])
+Batch 37/40: Extracted features shape: torch.Size([250, 10])
+Batch 38/40: Extracted features shape: torch.Size([250, 10])
+Batch 39/40: Extracted features shape: torch.Size([250, 10])
+Batch 40/40: Extracted features shape: torch.Size([250, 10])
+Evaluating recall...
+Recall@10: 1.0
+Recall@20: 1.0
+Recall@50: 1.0
+Recall@100: 1.0
+Mean Recall: 1.0
+Recall Results: [1.0, 1.0, 1.0, 1.0]
+Mean Recall: 1.0
+Evaluating Top-k accuracy...
+Batch 1/40: Top-5 accuracy for this batch: 0.4920
+Batch 2/40: Top-5 accuracy for this batch: 0.4880
+Batch 3/40: Top-5 accuracy for this batch: 0.5107
+Batch 4/40: Top-5 accuracy for this batch: 0.5210
+Batch 5/40: Top-5 accuracy for this batch: 0.5232
+Batch 6/40: Top-5 accuracy for this batch: 0.5220
+Batch 7/40: Top-5 accuracy for this batch: 0.5240
+Batch 8/40: Top-5 accuracy for this batch: 0.5200
+Batch 9/40: Top-5 accuracy for this batch: 0.5213
+Batch 10/40: Top-5 accuracy for this batch: 0.5216
+Batch 11/40: Top-5 accuracy for this batch: 0.5182
+Batch 12/40: Top-5 accuracy for this batch: 0.5130
+Batch 13/40: Top-5 accuracy for this batch: 0.5151
+Batch 14/40: Top-5 accuracy for this batch: 0.5140
+Batch 15/40: Top-5 accuracy for this batch: 0.5147
+Batch 16/40: Top-5 accuracy for this batch: 0.5098
+Batch 17/40: Top-5 accuracy for this batch: 0.5071
+Batch 18/40: Top-5 accuracy for this batch: 0.5051
+Batch 19/40: Top-5 accuracy for this batch: 0.5044
+Batch 20/40: Top-5 accuracy for this batch: 0.5062
+Batch 21/40: Top-5 accuracy for this batch: 0.5061
+Batch 22/40: Top-5 accuracy for this batch: 0.5051
+Batch 23/40: Top-5 accuracy for this batch: 0.5047
+Batch 24/40: Top-5 accuracy for this batch: 0.5025
+Batch 25/40: Top-5 accuracy for this batch: 0.5026
+Batch 26/40: Top-5 accuracy for this batch: 0.5043
+Batch 27/40: Top-5 accuracy for this batch: 0.5046
+Batch 28/40: Top-5 accuracy for this batch: 0.5036
+Batch 29/40: Top-5 accuracy for this batch: 0.5041
+Batch 30/40: Top-5 accuracy for this batch: 0.5041
+Batch 31/40: Top-5 accuracy for this batch: 0.5035
+Batch 32/40: Top-5 accuracy for this batch: 0.5031
+Batch 33/40: Top-5 accuracy for this batch: 0.5027
+Batch 34/40: Top-5 accuracy for this batch: 0.5033
+Batch 35/40: Top-5 accuracy for this batch: 0.5030
+Batch 36/40: Top-5 accuracy for this batch: 0.5027
+Batch 37/40: Top-5 accuracy for this batch: 0.5028
+Batch 38/40: Top-5 accuracy for this batch: 0.5020
+Batch 39/40: Top-5 accuracy for this batch: 0.5021
+Batch 40/40: Top-5 accuracy for this batch: 0.5026
+
+Test set: Top-5 Accuracy: 5026/10000 (50%)
+
+Top-k Accuracy: 50.26
