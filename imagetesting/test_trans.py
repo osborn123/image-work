@@ -8,6 +8,7 @@ from resnet import ResNet
 from zfnet import ZFNet
 from linear_transform import LinearTransform
 from mmd_transform import MMDTransform
+from class_linear_transform import ClassLinearTransform  # 导入新的class_linear_transform模块
 import wandb
 
 def seed_everything(seed):
@@ -19,13 +20,15 @@ def extract_features(model, dataloader, device):
     model.eval()
     model.to(device)
     features = []
+    labels = []
     with torch.no_grad():
-        for i, (inputs, _) in enumerate(dataloader):
+        for i, (inputs, targets) in enumerate(dataloader):
             inputs = inputs.to(device)
             outputs = model(inputs)
             features.append(outputs.cpu().numpy())
+            labels.append(targets.cpu().numpy())
             print(f'Batch {i+1}/{len(dataloader)}: Extracted features shape: {outputs.shape}')
-    return np.concatenate(features, axis=0)
+    return np.concatenate(features, axis=0), np.concatenate(labels, axis=0)
 
 def test_recall(feature1, feature2, feature2_selected, only_1_index, only_2_index, search_range):
     index_feature1 = faiss.IndexFlatL2(feature1.shape[1])
@@ -76,17 +79,17 @@ def main(args):
     ])
     train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
     test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=250, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=4, pin_memory=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     resnet_model = ResNet(num_classes=10)
     zfnet_model = ZFNet(num_classes=10)
 
     print("Extracting features using ResNet model...")
-    feature1 = extract_features(resnet_model, test_loader, device)
+    feature1, labels1 = extract_features(resnet_model, test_loader, device)
     print("Extracting features using ZFNet model...")
-    feature2 = extract_features(zfnet_model, test_loader, device)
+    feature2, labels2 = extract_features(zfnet_model, test_loader, device)
 
     indices = np.arange(feature1.shape[0])
     np.random.shuffle(indices)
@@ -107,7 +110,8 @@ def main(args):
             print("Performing linear transform...")
             feature2_selected = LinearTransform(args, feature2, feature1)
         elif args.transform_method == "class_linear":
-            feature2_selected = feature2.copy()
+            print("Performing class linear transform...")
+            feature2_selected = ClassLinearTransform(args, feature2, feature1, labels2)
         elif args.transform_method == "" or args.transform_method == "none":
             feature2_selected = feature2
         elif args.transform_method == "MMD":
@@ -154,8 +158,8 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, default=5, help="the top-k value for top-k accuracy")
     parser.add_argument("--transform_method", type=str, default="none", help="feature transform method: none, linear, class_linear, or MMD")
     parser.add_argument("--transform_lr", type=float, default=1e-4, help="learning rate for feature transform")
-    parser.add_argument("--transform_epoch", type=int, default=1000, help="number of epochs for feature transform")
-    parser.add_argument("--transform_batch_size", type=int, default=256, help="batch size for feature transform")
+    parser.add_argument("--transform_epoch", type=int, default=500, help="number of epochs for feature transform")  # 减少训练轮数
+    parser.add_argument("--transform_batch_size", type=int, default=128, help="batch size for feature transform")
     parser.add_argument("--device", type=int, default=0, help="device id for training")
     args = parser.parse_args()
     main(args)
