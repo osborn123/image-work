@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, Subset
 from torchvision import datasets, transforms
 from resnet import ResNet  
 
@@ -58,7 +58,6 @@ transform = transforms.Compose([
 train_images_tensor = transform(torch.tensor(train_images).permute(0, 3, 1, 2).repeat(1, 3, 1, 1))  # 复制到3个通道
 train_labels_tensor = torch.tensor(train_labels)
 train_dataset = TensorDataset(train_images_tensor, train_labels_tensor)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
 test_images_tensor = transform(torch.tensor(test_images).permute(0, 3, 1, 2).repeat(1, 3, 1, 1))  # 复制到3个通道
 test_labels_tensor = torch.tensor(test_labels)
@@ -125,9 +124,35 @@ optimizer = optim.Adam(pytorch_model.parameters(), lr=0.001)
 # 将模型和数据移至 GPU（如果可用）
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 训练和评估 PyTorch 模型
-train_pytorch_model(pytorch_model, train_loader, criterion, optimizer, device, epochs=5)
-evaluate_pytorch_model(pytorch_model, test_loader, device)
+# 定义不同的重叠率和 search range 预设
+overlap_presets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+search_range_presets = [10, 20, 50, 100]
 
-# 执行 top-k 测试
-topk_test(pytorch_model, device, test_loader, k=20)
+# 训练和评估每个重叠率和 search range 下的 PyTorch 模型
+for overlap_rate in overlap_presets:
+    # 根据重叠率划分训练集
+    num_samples = len(train_dataset)
+    indices = np.arange(num_samples)
+    np.random.shuffle(indices)
+    split = int(np.floor(0.8 * num_samples))
+    overlap_count = int(split * overlap_rate)
+    
+    train_indices = indices[:split - overlap_count]
+    val_indices = indices[split - overlap_count:]
+    overlap_indices = val_indices[:overlap_count]
+
+    final_train_indices = np.concatenate((train_indices, overlap_indices))
+    train_loader = DataLoader(Subset(train_dataset, final_train_indices), batch_size=64, shuffle=True)
+    
+    print(f"\nTraining with overlap rate: {overlap_rate*100}%")
+    
+    # 训练 PyTorch 模型
+    train_pytorch_model(pytorch_model, train_loader, criterion, optimizer, device, epochs=5)
+    
+    # 评估 PyTorch 模型
+    evaluate_pytorch_model(pytorch_model, test_loader, device)
+    
+    # 执行 top-k 测试
+    for search_range in search_range_presets:
+        print(f"\nTesting with search range: {search_range}")
+        topk_test(pytorch_model, device, test_loader, k=search_range)

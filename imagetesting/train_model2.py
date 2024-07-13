@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, Subset
 from torchvision import datasets, transforms
 from zfnet import ZFNet
 
@@ -46,7 +46,6 @@ transform = transforms.Compose([
 train_images_tensor = transform(torch.tensor(train_images).permute(0, 3, 1, 2))
 train_labels_tensor = torch.tensor(train_labels)
 train_dataset = TensorDataset(train_images_tensor, train_labels_tensor)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
 test_images_tensor = transform(torch.tensor(test_images).permute(0, 3, 1, 2))
 test_labels_tensor = torch.tensor(test_labels)
@@ -109,7 +108,6 @@ def main():
 
     train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
     test_dataset = datasets.MNIST(root='./data', train=False, transform=transform)
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
     model = ZFNet().to(device)
@@ -118,11 +116,34 @@ def main():
 
     num_epochs = 10
 
-    for epoch in range(1, num_epochs + 1):
-        train(model, device, train_loader, optimizer, criterion, epoch)
-        test(model, device, test_loader, criterion)
+    # Define different overlap rates and search ranges
+    overlap_presets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    search_range_presets = [5, 10, 20, 50]
 
-    topk_test(model, device, test_loader, k=5)
+    for overlap_rate in overlap_presets:
+        # Split train dataset according to the overlap rate
+        num_samples = len(train_dataset)
+        indices = np.arange(num_samples)
+        np.random.shuffle(indices)
+        split = int(np.floor(0.8 * num_samples))
+        overlap_count = int(split * overlap_rate)
+
+        train_indices = indices[:split - overlap_count]
+        val_indices = indices[split - overlap_count:]
+        overlap_indices = val_indices[:overlap_count]
+
+        final_train_indices = np.concatenate((train_indices, overlap_indices))
+        train_loader = DataLoader(Subset(train_dataset, final_train_indices), batch_size=64, shuffle=True)
+        
+        print(f"\nTraining with overlap rate: {overlap_rate*100}%")
+        
+        for epoch in range(1, num_epochs + 1):
+            train(model, device, train_loader, optimizer, criterion, epoch)
+            test(model, device, test_loader, criterion)
+
+        for search_range in search_range_presets:
+            print(f"\nTesting with search range: {search_range}")
+            topk_test(model, device, test_loader, k=search_range)
 
 if __name__ == '__main__':
     main()

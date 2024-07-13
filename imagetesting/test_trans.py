@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
-import faiss, time, random
+import faiss
+import random
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
@@ -65,11 +66,10 @@ def topk_test(model, device, test_loader, k=5):
 
 def main(args):
     seed_everything(42)
-    wandb.init(project="feature-transform", config=args, mode="disabled")
     
     transform = transforms.Compose([
         transforms.Resize(224),
-        transforms.Grayscale(num_output_channels=3),  # 将灰度图像转换为三通道图像
+        transforms.Grayscale(num_output_channels=3),  # Convert grayscale image to 3-channel image
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
@@ -142,5 +142,17 @@ if __name__ == "__main__":
     parser.add_argument("--transform_batch_size", type=int, default=256, help="batch size for feature transform")
     parser.add_argument("--device", type=int, default=0, help="device id for training")
     parser.add_argument("--overlap_rate", type=float, default=0, help="overlap rate for the experiment")
+    parser.add_argument("--overlap_presets", type=float, nargs='+', default=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0], help="preset overlap rates for the experiment")
+
     args = parser.parse_args()
-    main(args)
+
+    # Initialize wandb outside the loop
+    wandb.init(project="feature-transform", config=args, mode="disabled")
+
+    # Loop over overlap presets if specified
+    for overlap_rate in args.overlap_presets:
+        args.overlap_rate = overlap_rate
+        wandb.run.name = f"overlap_rate_{overlap_rate}"
+        main(args)
+
+    wandb.finish()
