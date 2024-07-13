@@ -11,6 +11,9 @@ This repository contains code for feature extraction, transformation, and evalua
 - `class_linear_transform.py`: Implements class-based linear transformation.
 - `test_trans.py`: Main script to run feature extraction, transformation, and evaluation.
 
+## model usage
+ because my computer not have enough memroy of gpu so i simiplfied orginal model, i make orginal model as a comment
+
 
 ## Quick Start: Running the Experiment Script
 
