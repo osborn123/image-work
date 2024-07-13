@@ -8,6 +8,7 @@ from resnet import ResNet
 from zfnet import ZFNet
 from linear_transform import LinearTransform
 from mmd_transform import MMDTransform
+import wandb
 
 def seed_everything(seed):
     random.seed(seed)
@@ -64,6 +65,7 @@ def topk_test(model, device, test_loader, k=5):
 
 def main(args):
     seed_everything(42)
+    wandb.init(project="feature-transform", config=args, mode="disabled")
     
     transform = transforms.Compose([
         transforms.Resize(224),
