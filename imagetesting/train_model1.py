@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import datasets, transforms
-from resnet import ResNet  # 调整导入路径
+from resnet import ResNet  
 
 # 检查 GPU 是否可用
 print("CUDA Available: ", torch.cuda.is_available())
