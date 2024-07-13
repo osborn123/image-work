@@ -14,6 +14,10 @@ def train(model, device, train_loader, optimizer, criterion, epoch):
         output = model(data)
         loss = criterion(output, target)
         loss.backward()
+        
+        # 添加梯度裁剪
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
+        
         optimizer.step()
         if batch_idx % 100 == 0:
             print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
@@ -55,7 +59,7 @@ def main():
     # 模型、损失函数和优化器
     model = ZFNet().to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)  # 将学习率调小
 
     # 训练和测试
     num_epochs = 10
@@ -75,3 +79,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+  

@@ -87,7 +87,7 @@ def main(args):
     print("Extracting features using ZFNet model...")
     feature2 = extract_features(zfnet_model, test_loader, device)
 
-    indices = np.arange(feature1.shape[0])
+    indices = np.arange(feature1.shape[0])  
     np.random.shuffle(indices)
     
     overlap_rate = args.overlap_rate
