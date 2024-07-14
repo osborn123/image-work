@@ -48,20 +48,21 @@ def test_recall(feature1, feature2, feature2_selected, only_1_index, only_2_inde
     print(f'Mean Recall: {mean_recall}, Max Recall: {max_recall}, Mean Square Recall: {mean_square_recall}')
     return recall_list, mean_recall, max_recall, mean_square_recall
 
-def topk_test(model, device, test_loader, k=5):
-    model.eval()
-    model.to(device)
+def topk_test(features, labels, k=5):
+    total = 0
     topk_correct = 0
-    with torch.no_grad():
-        for i, (inputs, labels) in enumerate(test_loader):
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, pred = outputs.topk(k, dim=1, largest=True, sorted=True)
-            topk_correct += sum([labels[i] in pred[i] for i in range(len(labels))])
-            print(f'Batch {i+1}/{len(test_loader)}: Top-{k} accuracy for this batch: {topk_correct / ((i+1) * test_loader.batch_size):.4f}')
 
-    topk_accuracy = 100. * topk_correct / len(test_loader.dataset)
-    print(f'\nTest set: Top-{k} Accuracy: {topk_correct}/{len(test_loader.dataset)} ({topk_accuracy:.0f}%)\n')
+    index = faiss.IndexFlatL2(features.shape[1])
+    index.add(features)
+    D, I = index.search(features, k)
+
+    for i in range(features.shape[0]):
+        if labels[i] in labels[I[i]]:
+            topk_correct += 1
+        total += 1
+
+    topk_accuracy = 100. * topk_correct / total
+    print(f'\nTest set: Top-{k} Accuracy: {topk_correct}/{total} ({topk_accuracy:.0f}%)\n')
     return topk_accuracy
 
 def main(args):
@@ -122,7 +123,8 @@ def main(args):
     print("Mean Square Recall:", mean_square_recall)
 
     print("Evaluating Top-k accuracy...")
-    topk_accuracy = topk_test(resnet_model, device, test_loader, k=args.top_k)
+    test_labels = np.array([label for _, label in test_dataset])
+    topk_accuracy = topk_test(feature2_selected, test_labels, k=args.top_k)
     print("Top-k Accuracy:", topk_accuracy)
 
     print(f"Final Results for overlap rate {int(overlap_rate * 100)}%:")

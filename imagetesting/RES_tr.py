@@ -9,10 +9,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import datasets, transforms
 
-# 将模型目录添加到 Python 路径中
-
-
-from resnet import resnet18  # 调整导入路径
+from resnet import ResNet  # 调整导入路径
 
 # 检查 GPU 是否可用
 print("CUDA Available: ", torch.cuda.is_available())
@@ -50,12 +47,12 @@ test_images = load_mnist_images(r'C:\Users\liu18\image-work\imagetesting\MNIST-m
 test_labels = load_mnist_labels(r'C:\Users\liu18\image-work\imagetesting\MNIST-master\t10k-labels-idx1-ubyte.gz')
 
 # 转换为 PyTorch 张量并创建 DataLoader
-train_images_tensor = torch.tensor(train_images).permute(0, 3, 1, 2)
+train_images_tensor = torch.tensor(train_images).permute(0, 3, 1, 2).repeat(1, 3, 1, 1)  # 重复通道以匹配3通道输入
 train_labels_tensor = torch.tensor(train_labels)
 train_dataset = TensorDataset(train_images_tensor, train_labels_tensor)
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-test_images_tensor = torch.tensor(test_images).permute(0, 3, 1, 2)
+test_images_tensor = torch.tensor(test_images).permute(0, 3, 1, 2).repeat(1, 3, 1, 1)  # 重复通道以匹配3通道输入
 test_labels_tensor = torch.tensor(test_labels)
 test_dataset = TensorDataset(test_images_tensor, test_labels_tensor)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
@@ -97,7 +94,7 @@ def evaluate_pytorch_model(model, test_loader, device):
     print(f"PyTorch Model Accuracy: {100 * correct / total}%")
 
 # 初始化模型、损失函数和优化器
-pytorch_model = resnet18(num_classes=10)
+pytorch_model = ResNet(num_classes=10)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(pytorch_model.parameters(), lr=0.001)
 
