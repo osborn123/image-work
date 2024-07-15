@@ -124,21 +124,68 @@ def train_zfnet(model, device, train_loader, optimizer, criterion, epoch):
         if batch_idx % 100 == 0:
             print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
-# def test_zfnet(model, device, test_loader, criterion):
-#     model.eval()
-#     test_loss = 0
-#     correct = 0
-#     with torch.no_grad():
-#         for data, target in test_loader:
-#             data, target = data.to(device), target.to(device)
-#             output = model(data)
-#             test_loss += criterion(output, target).item()
-#             pred = output.argmax(dim=1, keepdim=True)
-#             correct += pred.eq(target.view_as(pred)).sum().item()
-#     test_loss /= len(test_loader.dataset)
-#     accuracy = 100. * correct / len(test_loader.dataset)
-#     print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({accuracy:.0f}%)\n')
-#     return accuracy
+def test_zfnet(model, device, test_loader, criterion, k=1):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    topk_correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += criterion(output, target).item()
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            
+            # Calculate top-k accuracy
+            topk_pred = output.topk(k, dim=1).indices
+            topk_correct += sum([target[i] in topk_pred[i] for i in range(len(target))])
+
+    test_loss /= len(test_loader.dataset)
+    accuracy = 100. * correct / len(test_loader.dataset)
+    topk_accuracy = 100. * topk_correct / len(test_loader.dataset)
+    print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({accuracy:.0f}%), Top-{k} Accuracy: {topk_correct}/{len(test_loader.dataset)} ({topk_accuracy:.0f}%)\n')
+    return accuracy, topk_accuracy
+
+def main():
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    transform = transforms.Compose([
+        transforms.Grayscale(num_output_channels=3),
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+
+    train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+    test_dataset = datasets.MNIST(root='./data', train=False, transform=transform)
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+
+    model = ZFNet().to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+
+    num_epochs = 10
+    best_topk_accuracy = 0
+    for epoch in range(1, num_epochs + 1):
+        train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
+        _, topk_accuracy = test_zfnet(model, device, test_loader, criterion, k=5)  # Experiment with top-5 accuracy
+        if topk_accuracy > best_topk_accuracy:
+            best_topk_accuracy = topk_accuracy
+            torch.save(model.state_dict(), f"./saved_features/topk/zfnet_mnist_best.pth")
+    torch.save(model.state_dict(), f"./saved_features/image_classification/zfnet_mnist.pth")
+
+    zf_feature = cat_feature(model, test_loader)
+    torch.save(zf_feature, "saved_features/image_classification/MNIST_test_zfNet.pt")
+
+if __name__ == '__main__':
+    if not os.path.exists("saved_features/image_classification"):
+        os.makedirs("saved_features/image_classification")
+    if not os.path.exists("saved_features/topk"):
+        os.makedirs("saved_features/topk")
+    main()
 
 def train(model_name, gen_feature=False, verbose=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -158,9 +205,13 @@ def train(model_name, gen_feature=False, verbose=False):
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
         num_epochs = 3
+        best_topk_accuracy = 0
         for epoch in range(1, num_epochs + 1):
             train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
-            test_zfnet(model, device, test_loader, criterion)
+            _, topk_accuracy = test_zfnet(model, device, test_loader, criterion, k=5)  # Experiment with top-5 accuracy
+            if topk_accuracy > best_topk_accuracy:
+                best_topk_accuracy = topk_accuracy
+                torch.save(model.state_dict(), f"./saved_features/topk/zfnet_mnist_best.pth")
     elif model_name == "ResNet":
         model = ResNet().to(device)
         criterion = nn.CrossEntropyLoss()
@@ -208,9 +259,10 @@ zfmodel, zf_feature = train(model_name="ZFNet", verbose=True)
 resmodel, res_feature = train(model_name="ResNet", verbose=True)
 
 if __name__ == "__main__":
-    if not os.path.exists("saved_features/image_classification"):
-        os.mkdir("saved_features/image_classification")
+    
+    if not os.path.exists("saved_features/topk"):
+        os.makedirs("saved_features/topk")
     zf_feature = cat_feature(zfmodel, test_loader)
     res_feature = cat_feature(resmodel, test_loader)
-    torch.save(zf_feature, "saved_features/image_classification/MNIST_test_zfNet.pt")
-    torch.save(res_feature, "saved_features/image_classification/MNIST_test_resNet.pt")
+    torch.save(zf_feature, "saved_features/topk/MNIST_test_zfNet.pt")
+    torch.save(res_feature, "saved_features/topk/MNIST_test_resNet.pt")
