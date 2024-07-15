@@ -1,0 +1,46 @@
+name: best_full_test_ratio
+program: main.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: maximize
+  name: recall
+parameters:
+  candidate_num:
+    value: 10
+  feature1_path:
+    value: resnet_feature.pt
+  feature2_path:
+    value: vgg_feature.pt
+  mode:
+    value: online
+  reduced_dim:
+    value: 0
+  run_entity:
+    value: yangbn
+  saved_features_dir:
+    value: saved_features
+  search_range:
+    value: 1000
+  transform_batch_size:
+    value: 128
+  transform_epoch:
+    value: 10000
+  transform_lr:
+    value: 0.0001
+  transform_method:
+    value: linear
+  select_method:
+    value: random
+  select_proportion:
+    values:
+      - 0.1
+      - 0.2
+      - 0.3
+      - 0.4
+      - 0.5
+      - 0.6
+      - 0.7
+      - 0.8
+      - 0.9
+      - 1.0

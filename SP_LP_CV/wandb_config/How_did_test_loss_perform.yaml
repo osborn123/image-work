@@ -1,0 +1,38 @@
+name: How_did_test_loss_perform
+program: main.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: maximize
+  name: recall
+parameters:
+  candidate_num:
+    value: 10
+  feature1_path:
+    value: inception_mnist_features.pt
+  feature2_path:
+    value: vgg_mnist_reduced_features.pt
+  mode:
+    value: online
+  reduced_dim:
+    value: 0
+  run_entity:
+    value: yangbn
+  saved_features_dir:
+    value: saved_features
+  transform_batch_size:
+    value: 128
+  transform_epoch:
+    values: 
+      - 10000
+      - 100000
+      - 1000000
+  transform_lr:
+    values: 
+      - 0.001
+      - 0.0001
+      - 0.00001
+      - 0.0000001
+  transform_method:
+    values: 
+      - class_linear

@@ -1,0 +1,41 @@
+name: HNSW
+program: test_MMD_sp_no_reference.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: minimize
+  name: max_mse_dist3
+parameters:
+  mode:
+    value: online
+  run_entity:
+    value: yangbn
+  transform_method:
+    value: HNSW
+  transform_epoch:
+    value: 10000
+  mapping_method:
+    values:
+      - random
+      - permutation
+  k:
+    values:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+  transform_lr:
+    values:
+      - 0.001
+      - 0.0001
+      - 0.00001
+      - 0.000001
+  select_proportion:
+    value: 1.0

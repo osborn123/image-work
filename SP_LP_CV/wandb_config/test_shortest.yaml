@@ -1,0 +1,48 @@
+name: How_did_shortest_path_perform
+program: test_MMD_sp.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: minimize
+  name: dist3_mse
+parameters:
+  run_entity:
+    value: yangbn
+  mode:
+    value: online
+  saved_features_dir:
+    value: saved_features
+  transform_batch_size:
+    value: 128
+  transform_epoch:
+    values: 
+      - 10000
+      - 100000
+  transform_lr:
+    values: 
+      - 0.001
+      - 0.0001
+      - 0.00001
+  select_proportion:
+    values:
+      - 0.0
+      - 0.001
+      - 0.01
+      - 0.02
+      - 0.03
+      - 0.04
+      - 0.05
+      - 0.06
+      - 0.07
+      - 0.08
+      - 0.09
+      - 0.1
+      - 0.2
+      - 0.3
+      - 0.4
+      - 0.5
+      - 0.6
+      - 0.7
+      - 0.8
+      - 0.9
+      - 1.0

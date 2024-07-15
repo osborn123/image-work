@@ -1,0 +1,50 @@
+name: best_full_test_ratio
+program: main.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: minimize
+  name: max_dist2_selected
+parameters:
+  mode:
+    value: online
+  run_entity:
+    value: yangbn
+  gnn_model1:
+    values:
+      - GCN
+      - GAT
+      - GraphSAGE
+  gnn_model2:
+    values:
+      - GCN
+      - GAT
+      - GraphSAGE
+  loss_type1:
+    values:
+      - MSE
+      - MAE
+      - MAX
+      - MEAN
+      - MIN
+      - SUM
+  loss_type2:
+    values:
+      - MSE
+      - MAE
+      - MAX
+      - MEAN
+      - MIN
+      - SUM
+  select_proportion:
+    values:
+      - 0.1
+      - 0.2
+      - 0.3
+      - 0.4
+      - 0.5
+      - 0.6
+      - 0.7
+      - 0.8
+      - 0.9
+      - 1.0

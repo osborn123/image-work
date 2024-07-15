@@ -1,0 +1,47 @@
+program: main.py
+project: multi_source_retrieval
+method: grid
+metric:
+  goal: maximize
+  name: recall
+parameters:
+  transform_batch_size:
+    value: 128
+  saved_features_dir:
+    value: saved_features
+  transform_method:
+    values:
+      - linear
+      - none
+    distribution: categorical
+  transform_epoch:
+    values:
+      - 10
+      - 100
+      - 1000
+      - 10000
+  feature2_path:
+    value: vgg_feature.pt
+  feature1_path:
+    value: resnet_feature.pt
+  candidate_num:
+    value: 10
+  transform_lr:
+    values: 
+      - 0.01
+      - 0.001
+      - 0.0001
+  search_range:
+    values:
+      - 100
+      - 1000
+  reduced_dim:
+    values:
+      - 0
+      - 64
+      - 128
+      - 256
+  run_entity:
+    value: yangbn
+  mode:
+    value: online
