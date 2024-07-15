@@ -212,6 +212,8 @@ def main(args):
         agent = ShortestPathLoadTest(args, "shortest_distance", args.saved_features_dir)
     elif args.task == "image_classification":
         agent = ImageClassificationLoadTest(args, "image_classification", args.saved_features_dir)
+    elif args.task == "image_topk":
+        agent = ImageTopkLoadTest(args, "image_topk", args.saved_features_dir)
 
     feature1, feature2 = agent.load_features(args)
 
@@ -256,7 +258,7 @@ if __name__ == "__main__":
     # parser.add_argument("--reduced_dim", type=int, default=128, help="0=>no reduction, other=> call kmeans to reduction")
     parser.add_argument("--reduced_dim", type=int, default=0, help="0=>no reduction, other=> call kmeans to reduction")
 
-    parser.add_argument("--task", type=str, default="image_classification", choices=['shortest_path', 'link_prediction', 'image_classification', 'nlp'], help="")
+    parser.add_argument("--task", type=str, default="image_classification", choices=['shortest_path', 'link_prediction', 'image_classification', 'nlp','image_topk'], help="")
     parser.add_argument("--run_entity", type=str, default="", help="run entity")
     parser.add_argument("--mode", type=str, default="disabled", help="enabled or disabled")
 

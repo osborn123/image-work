@@ -160,7 +160,7 @@ def train(model_name, gen_feature=False, verbose=False):
         num_epochs = 3
         for epoch in range(1, num_epochs + 1):
             train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
-            test_zfnet(model, device, test_loader, criterion)
+            #test_zfnet(model, device, test_loader, criterion)
     elif model_name == "ResNet":
         model = ResNet().to(device)
         criterion = nn.CrossEntropyLoss()
