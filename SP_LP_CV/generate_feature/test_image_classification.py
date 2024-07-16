@@ -124,23 +124,7 @@ def train_zfnet(model, device, train_loader, optimizer, criterion, epoch):
         if batch_idx % 100 == 0:
             print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
-# def test_zfnet(model, device, test_loader, criterion):
-#     model.eval()
-#     test_loss = 0
-#     correct = 0
-#     with torch.no_grad():
-#         for data, target in test_loader:
-#             data, target = data.to(device), target.to(device)
-#             output = model(data)
-#             test_loss += criterion(output, target).item()
-#             pred = output.argmax(dim=1, keepdim=True)
-#             correct += pred.eq(target.view_as(pred)).sum().item()
-#     test_loss /= len(test_loader.dataset)
-#     accuracy = 100. * correct / len(test_loader.dataset)
-#     print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({accuracy:.0f}%)\n')
-#     return accuracy
-
-def train(model_name, gen_feature=False, verbose=False):
+def train(model_name, train_loader, test_loader, gen_feature=False, verbose=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
     if model_name == "ZFNet":
@@ -158,11 +142,27 @@ def train(model_name, gen_feature=False, verbose=False):
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
         num_epochs = 3
-        for epoch in range(1, num_epochs + 1):
-            train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
-            #test_zfnet(model, device, test_loader, criterion)
+        if os.path.exists(f"./saved_features/image_classification/{model_name.lower()}_mnist.pth"):
+            model.load_state_dict(torch.load(f"./saved_features/image_classification/{model_name.lower()}_mnist.pth"))
+            print(f"Loaded model from disk")
+        else:
+            for epoch in range(1, num_epochs + 1):
+                train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
+            torch.save(model.state_dict(), f"./saved_features/image_classification/{model_name.lower()}_mnist.pth")
+        
+                #test_zfnet(model, device, test_loader, criterion)
     elif model_name == "ResNet":
         model = ResNet().to(device)
+        transform = transforms.Compose([
+            transforms.Grayscale(num_output_channels=3),
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])
+        train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+        test_dataset = datasets.MNIST(root='./data', train=False, transform=transform)
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=1e-3)
         if os.path.exists(f"./saved_features/image_classification/{model_name.lower()}_mnist.pth"):
@@ -201,15 +201,18 @@ def cat_feature(model, data):
         for images, labels in tqdm.tqdm(data, desc="Generating features"):
             images = images.to(device)
             feature = model.generate_feature(images)
-            features.append(feature)
+            features.append(feature.cpu())  # Move to CPU before appending
         return torch.cat(features, dim=0)
 
-zfmodel, zf_feature = train(model_name="ZFNet", verbose=True)
-resmodel, res_feature = train(model_name="ResNet", verbose=True)
+
+zfmodel, zf_feature = train(model_name="ZFNet", train_loader=train_loader, test_loader=test_loader, verbose=True)
+resmodel, res_feature = train(model_name="ResNet", train_loader=train_loader, test_loader=test_loader, verbose=True)
+
 
 if __name__ == "__main__":
     if not os.path.exists("saved_features/image_classification"):
-        os.mkdir("saved_features/image_classification")
+        os.makedirs("saved_features/image_classification")
+
     zf_feature = cat_feature(zfmodel, test_loader)
     res_feature = cat_feature(resmodel, test_loader)
     torch.save(zf_feature, "saved_features/image_classification/MNIST_test_zfNet.pt")

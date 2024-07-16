@@ -166,12 +166,15 @@ def train(model_name, gen_feature=False, verbose=False):
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
         num_epochs = 3
         best_topk_accuracy = 0
-        for epoch in range(1, num_epochs + 1):
-            train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
-            _, topk_accuracy = test(model, device, test_loader, criterion, k=5)  # Experiment with top-5 accuracy
-            if topk_accuracy > best_topk_accuracy:
-                best_topk_accuracy = topk_accuracy
-                torch.save(model.state_dict(), f"./saved_features/topk/zfnet_mnist_best.pth")
+        if os.path.exists(f"./saved_features/topk/{model_name.lower()}_mnist.pth"):
+            model.load_state_dict(torch.load(f"./saved_features/topk/{model_name.lower()}_mnist.pth"))
+            print(f"Loaded model from disk")
+        else:
+            for epoch in range(1, num_epochs + 1):
+                train_zfnet(model, device, train_loader, optimizer, criterion, epoch)
+                _, topk_accuracy = test(model, device, test_loader, criterion, k=5)
+            torch.save(model.state_dict(), f"./saved_features/topk/{model_name.lower()}_mnist.pth") 
+            
     elif model_name == "ResNet":
         model = ResNet().to(device)
         transform = transforms.Compose([
@@ -228,7 +231,7 @@ def cat_feature(model, data):
         for images, labels in tqdm.tqdm(data, desc="Generating features"):
             images = images.to(device)
             feature = model.generate_feature(images)
-            features.append(feature)
+            features.append(feature.cpu())
         return torch.cat(features, dim=0)
 
 zfmodel, zf_feature = train(model_name="ZFNet", verbose=True)
