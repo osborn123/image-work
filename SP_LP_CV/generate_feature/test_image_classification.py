@@ -60,6 +60,48 @@ class ZFNet(nn.Module):
         x = torch.flatten(x, 1)
         return x
 
+# 定义适应 299x299 输入大小的网络结构
+class VGGNetSimple(nn.Module):
+    def __init__(self, num_classes=10):
+        super(VGGNetSimple, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
+        # 根据 299x299 输入调整全连接层输入大小
+        self.fc_features = nn.Sequential(
+            nn.Linear(128 * 37 * 37, 256),  # 299 -> 149 -> 74 -> 37
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5)
+        )
+        self.fc = nn.Linear(256, num_classes)
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x= self.fc_features(x)
+        x = self.fc(x)
+        return x
+    
+    def generate_feature(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        features = self.fc_features(x)
+        return features
+# Example usage:
+# model = VGGNet(num_classes=10)
+# output = model(torch.randn(1, 3, 224, 224))
+
+
 
 def ResidualBlock(in_channels, out_channels, stride=1):
     """
@@ -124,6 +166,8 @@ def train(model_name, gen_feature=False, verbose=False):
         model = ZFNet().to(device)
     elif model_name == "ResNet":
         model = ResNet().to(device)
+    elif model_name == "VGGNet":
+        model = VGGNetSimple().to(device)
     else:
         raise ValueError("model_name not supported")
     
@@ -166,13 +210,25 @@ def cat_feature(model, data):
             features.append(feature)
         return torch.cat(features, dim=0)
 
-zfmodel, zf_feature = train(model_name="ZFNet", verbose=True)
+def test(model, data, feature):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    from sklearn.metrics import accuracy_score
+    acc = accuracy_score(data.targets, model.fc(feature).argmax(dim=1).cpu().numpy())
+    return acc
+
+# zfmodel, zf_feature = train(model_name="ZFNet", verbose=True)
+vggmodel, vgg_feature = train(model_name="VGGNet", verbose=True)
 resmodel, res_feature = train(model_name="ResNet", verbose=True)
+
 
 if __name__ == "__main__":
     if not os.path.exists("saved_features/image_classification"):
         os.mkdir("saved_features/image_classification")
-    zf_feature = cat_feature(zfmodel, test_loader)
+    # zf_feature = cat_feature(zfmodel, test_loader)
+    vgg_feature = cat_feature(vggmodel, test_loader)
     res_feature = cat_feature(resmodel, test_loader)
-    torch.save(zf_feature, "saved_features/image_classification/MNIST_test_zfNet.pt")
+    # torch.save(zf_feature, "saved_features/image_classification/MNIST_test_zfNet.pt")
+    torch.save(vgg_feature, "saved_features/image_classification/MNIST_test_vggNet.pt")
     torch.save(res_feature, "saved_features/image_classification/MNIST_test_resNet.pt")
+    print(test(resmodel, test_dataset, res_feature))
+    print(test(vggmodel, test_dataset, vgg_feature))

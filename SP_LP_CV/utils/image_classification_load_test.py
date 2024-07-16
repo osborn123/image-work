@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import faiss
 from torchvision import datasets, transforms
-from generate_feature.test_image_classification import transform, train_dataset, test_dataset, train_loader, test_loader, zfmodel, resmodel
+from generate_feature.test_image_classification import transform, train_dataset, test_dataset, train_loader, test_loader, vggmodel, resmodel
 
 
 class ImageClassificationLoadTest(LoadTest):
@@ -25,7 +25,8 @@ class ImageClassificationLoadTest(LoadTest):
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.model1 = resmodel
-        self.model2 = zfmodel
+        # self.model2 = zfmodel
+        self.model2 = vggmodel
     
     def load_features(self, args, feature1_name=None, feature2_name=None):
         if feature1_name is None:
@@ -48,7 +49,6 @@ class ImageClassificationLoadTest(LoadTest):
         # return {}
 
     def test_topk_accuracy(self, feature1, feature2, feature1_transformed):
-        a = 1
         device = self.model1.fc.weight.device
         if isinstance(feature1, np.ndarray):
             feature1 = torch.from_numpy(feature1)
@@ -83,36 +83,19 @@ class ImageClassificationLoadTest(LoadTest):
     #         "topk_acc1_transformed": topk_acc1_transformed
     #     }
 
-    def topk_test(self, features, labels, k=5):
-        total = 0
-        topk_correct = 0
-
-        index = faiss.IndexFlatL2(features.shape[1])
-        index.add(features)
-        D, I = index.search(features, k)
-
-        for i in range(features.shape[0]):
-            if labels[i] in labels[I[i]]:
-                topk_correct += 1
-            total += 1
-
-        topk_accuracy = 100. * topk_correct / total
-        print(f'\nTest set: Top-{k} Accuracy: {topk_correct}/{total} ({topk_accuracy:.0f}%)\n')
-        return topk_accuracy
-
-    # def test_topk_accuracy(self, args, k=5):
-    #     model = self.resmodel
-    #     self.model.eval()
-    #     model.to(self.device)
+    # def topk_test(self, features, labels, k=5):
+    #     total = 0
     #     topk_correct = 0
-    #     with torch.no_grad():
-    #         for i, (inputs, labels) in enumerate(self.test_loader):
-    #             inputs, labels = inputs.to(self.device), labels.to(self.device)
-    #             outputs = model(inputs)
-    #             _, pred = outputs.topk(k, dim=1, largest=True, sorted=True)
-    #             topk_correct += sum([labels[i] in pred[i] for i in range(len(labels))])
-    #             print(f'Batch {i+1}/{len(test_loader)}: Top-{k} accuracy for this batch: {topk_correct / ((i+1) * test_loader.batch_size):.4f}')
 
-    #     topk_accuracy = 100. * topk_correct / len(test_loader.dataset)
-    #     print(f'\nTest set: Top-{k} Accuracy: {topk_correct}/{len(test_loader.dataset)} ({topk_accuracy:.0f}%)\n')
+    #     index = faiss.IndexFlatL2(features.shape[1])
+    #     index.add(features)
+    #     D, I = index.search(features, k)
+
+    #     for i in range(features.shape[0]):
+    #         if labels[i] in labels[I[i]]:
+    #             topk_correct += 1
+    #         total += 1
+
+    #     topk_accuracy = 100. * topk_correct / total
+    #     print(f'\nTest set: Top-{k} Accuracy: {topk_correct}/{total} ({topk_accuracy:.0f}%)\n')
     #     return topk_accuracy

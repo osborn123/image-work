@@ -284,7 +284,7 @@ if __name__ == "__main__":
     # parser.add_argument("--feature2_path", type=str, default="GCN_cora.pt", help="feature2 path")
     # parser.add_argument("--feature3_path", type=str, default="GAT_cora.pt", help="feature3 path")
     parser.add_argument("--feature1_path", type=str, default="MNIST_test_resNet.pt", help="feature1 path")
-    parser.add_argument("--feature2_path", type=str, default="MNIST_test_zfNet.pt", help="feature2 path")
+    parser.add_argument("--feature2_path", type=str, default="MNIST_test_vggNet.pt", help="feature2 path")
 
     parser.add_argument("--dist_path", type=str, default="shortestpath/native_dis.pt", help="sp groundtruth dist")
 
