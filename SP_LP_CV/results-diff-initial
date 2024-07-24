@@ -1,0 +1,28 @@
+VGGNet Accuracy: 0.9824
+VGGNetNew Accuracy: 0.9841
+(image-work) PS D:\image-work> & C:/Users/liu18/.conda/envs/image-work/python.exe d:/image-work/SP_LP_CV/main.py
+从磁盘加载VGGNet模型
+从磁盘加载VGGNetNew模型
+Namespace(candidate_num=10, device=0, dist_path='shortestpath/native_dis.pt', feature1_path='MNIST_test_vggNetNew.pt', feature2_path='MNIST_test_vggNet.pt', gnn_model1='GAT', gnn_model2='GraphSAGE', k=10, k1=10, k2=10, layers=2, loss_type1='MSE', loss_type2='MSE', mapping_method='permutation', mode='disabled', overlap_ratio=1.0, reduced_dim=0, run_entity='', saved_features_dir='saved_features', search_range=[10, 20, 50, 100, 500, 1000], select_method='random', select_proportion=0.9, task='image_classification', transform_batch_size=256, transform_epoch=1000, transform_lr=0.0001, transform_method='none', with_activation=0, with_bias=1)
+INFO:root:Loading features...
+proportion is too large, using whole features.
+{'1->1/2->2@10': 0.343,
+ '1->1/2->2@100': 0.4873,
+ '1->1/2->2@1000': 0.85852,
+ '1->1/2->2@20': 0.364,
+ '1->1/2->2@50': 0.422,
+ '1->1/2->2@500': 0.73812,
+ "2->1'/1->1@10": 0.001,
+ "2->1'/1->1@100": 0.0101,
+ "2->1'/1->1@1000": 0.18015,
+ "2->1'/1->1@20": 0.002,
+ "2->1'/1->1@50": 0.0044,
+ "2->1'/1->1@500": 0.073,
+ "2->1'/2->2@10": 0.001,
+ "2->1'/2->2@100": 0.0117,
+ "2->1'/2->2@1000": 0.15937,
+ "2->1'/2->2@20": 0.0015,
+ "2->1'/2->2@50": 0.0046,
+ "2->1'/2->2@500": 0.06378}
+{'acc1': 0.0941, 'acc1_transformed': 0.9841, 'acc2': 0.0179}
+({'acc1': 0.0941, 'acc2': 0.0179, 'acc1_transformed': 0.9841}, {'1->1/2->2@10': 0.343, "2->1'/1->1@10": 0.001, "2->1'/2->2@10": 0.001, '1->1/2->2@20': 0.364, "2->1'/1->1@20": 0.002, "2->1'/2->2@20": 0.0015, '1->1/2->2@50': 0.422, "2->1'/1->1@50": 0.0044, "2->1'/2->2@50": 0.0046, '1->1/2->2@100': 0.4873, "2->1'/1->1@100": 0.0101, "2->1'/2->2@100": 0.0117, '1->1/2->2@500': 0.73812, "2->1'/1->1@500": 0.073, "2->1'/2->2@500": 0.06378, '1->1/2->2@1000': 0.85852, "2->1'/1->1@1000": 0.18015, "2->1'/2->2@1000": 0.15937})

@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import faiss
 from torchvision import datasets, transforms
-from generate_feature.test_image_classification import transform, train_dataset, test_dataset, train_loader, test_loader, vggmodel, resmodel
+from generate_feature.test_image_classification import transform, train_dataset, test_dataset, train_loader, test_loader, vggmodel, vggnewmodel
 
 
 class ImageClassificationLoadTest(LoadTest):
@@ -24,9 +24,9 @@ class ImageClassificationLoadTest(LoadTest):
         self.test_dataset = test_dataset
         self.train_loader = train_loader
         self.test_loader = test_loader
-        self.model1 = resmodel
+        self.model1 = vggmodel 
         # self.model2 = zfmodel
-        self.model2 = vggmodel
+        self.model2 = vggnewmodel
     
     def load_features(self, args, feature1_name=None, feature2_name=None):
         if feature1_name is None:

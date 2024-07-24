@@ -23,6 +23,7 @@ from transform.MMD_transform import MMDTransform
 from utils import *
 
 
+
 def cal_diff(k_cluster_1_dist, k_cluster_2_dist, mapping):
     k_cluster_1_dist = k_cluster_1_dist[np.ix_(mapping, mapping)]
     k_cluster_diff = np.abs(k_cluster_1_dist - k_cluster_2_dist)
@@ -172,7 +173,8 @@ def calculate_mapping(args, feature1, feature2, only_1_index, only_2_index, over
     elif args.transform_method == "class_linear":
         feature2_selected = feature2.copy()
     elif args.transform_method == "" or args.transform_method == "none":
-        feature2_selected = feature2
+        feature2_selected = feature2.copy()
+        feature1_transformed = feature1.copy()
     elif args.transform_method == "HNSW":
         feature2_selected = feature2.copy()
         feature1_guided, feature2_guided = get_guided_by_no_reference(args, feature1, feature2)
@@ -274,7 +276,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--k1", type=int, default=10, help="k1 for kmeans")
     parser.add_argument("--k2", type=int, default=10, help="k2 for kmeans")
-    parser.add_argument("--k", type=int, default=-1, help="k2 for kmeans")
+    parser.add_argument("--k", type=int, default=10, help="k2 for kmeans")
+    
 
     # parser.add_argument("--feature1_path", type=str, default="shortestpath/shortest_path_GATEncoder_ae_10.4974.pt", help="feature3 path")
     # parser.add_argument("--feature2_path", type=str, default="shortestpath/shortest_path_GCNEncoder_ae_11.0291.pt", help="feature3 path")
@@ -285,7 +288,7 @@ if __name__ == "__main__":
     # parser.add_argument("--feature1_path", type=str, default="GAT_cora.pt", help="feature1 path")
     # parser.add_argument("--feature2_path", type=str, default="GCN_cora.pt", help="feature2 path")
     # parser.add_argument("--feature3_path", type=str, default="GAT_cora.pt", help="feature3 path")
-    parser.add_argument("--feature1_path", type=str, default="MNIST_test_resNet.pt", help="feature1 path")
+    parser.add_argument("--feature1_path", type=str, default="MNIST_test_vggNetNew.pt", help="feature1 path")
     parser.add_argument("--feature2_path", type=str, default="MNIST_test_vggNet.pt", help="feature2 path")
 
     parser.add_argument("--dist_path", type=str, default="shortestpath/native_dis.pt", help="sp groundtruth dist")
@@ -294,11 +297,11 @@ if __name__ == "__main__":
     parser.add_argument("--select_proportion", type=float, default=0.9, help="select proportion")
     # parser.add_argument("--select_proportion", type=float, default=0.0, help="select proportion")
 
-    parser.add_argument("--transform_method", type=str, default="linear", help="linear")
+    #parser.add_argument("--transform_method", type=str, default="linear", help="linear")
     # parser.add_argument("--transform_method", type=str, default="HNSW", help="linear")
     # parser.add_argument("--transform_method", type=str, default="MMD", help="linear")
     # parser.add_argument("--transform_method", type=str, default="class_linear", help="linear")
-    # parser.add_argument("--transform_method", type=str, default="none", help="linear")
+    parser.add_argument("--transform_method", type=str, default="none", help="linear")
     # parser.add_argument("--transform_epoch", type=int, default=10000, help="epoch for transform (only for linear now)")
     # parser.add_argument("--transform_epoch", type=int, default=100, help="epoch for transform (only for linear now)")
     parser.add_argument("--mapping_method", type=str, default="permutation", help="random or permutation")
@@ -315,7 +318,7 @@ if __name__ == "__main__":
     parser.add_argument("--candidate_num", type=int, default=10, help="the candidate_num is the m in the m@recall")
     parser.add_argument("--search_range", type=int, default=[10, 20, 50, 100, 500, 1000], help="the search range for faiss search")
     # overlap_ratio
-    parser.add_argument("--overlap_ratio", type=float, default=0.9, help="overlap ratio")
+    parser.add_argument("--overlap_ratio", type=float, default=1.0, help="overlap ratio")
 
     parser.add_argument("--device", type=int, default=0, help="device for training")
     args = parser.parse_args()
